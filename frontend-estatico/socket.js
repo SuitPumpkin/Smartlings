@@ -96,6 +96,15 @@ socket.on('room-closed', (message) => {
     const createButton = document.querySelector('button[onclick="window.createRoom()"]');
     if (createButton) createButton.disabled = false;
 });
+// Profesor: Confirmación de pregunta agregada
+socket.on('question-added', (quiz) => {
+    console.log("Pregunta agregada. Total en quiz:", quiz.length);
+});
+// Profesor: Quiz iniciado exitosamente
+socket.on('quiz-started', (data) => {
+    console.log("Quiz iniciado con", data.totalQuestions, "preguntas");
+    alert(`Quiz iniciado con ${data.totalQuestions} preguntas`);
+});
 
 // Eventos de conexión
 socket.on('connect', () => {
