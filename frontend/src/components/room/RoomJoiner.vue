@@ -1,60 +1,90 @@
 <template>
   <div class="room-joiner">
-    <!-- Unirse a Sala -->
-    <div v-if="!roomStore.currentRoom" class="join-room-section">
+
+    <!-- ========================= -->
+    <!-- 🟦 Sección: Unirse a Sala -->
+    <!-- ========================= -->
+    <div v-if="!roomStore.currentRoom" class="join-room-section flex flex-center">
       <q-card class="join-room-card q-pa-xl">
         <q-card-section class="text-center">
-          <div class="text-h5 q-mb-md">Unirse a una Sala</div>
+
+          <!-- Título -->
+          <div class="text-h4 text-bold q-mb-md">Unirse a una Sala</div>
+
+          <!-- Subtítulo -->
+          <div class="text-subtitle2 q-mb-lg text-grey-7">
+            Ingresa tu nombre y el ID proporcionado por tu profesor.
+          </div>
+
+          <!-- Input: Nombre -->
           <q-input
             v-model="studentName"
             label="Tu nombre"
             outlined
+            dense
             class="q-mb-md"
             :rules="[val => !!val || 'Campo obligatorio']"
           />
+
+          <!-- Input: Room ID -->
           <q-input
             v-model="roomId"
             label="ID de la Sala"
             outlined
-            class="q-mb-md"
+            dense
+            class="q-mb-lg"
             :rules="[val => !!val || 'Campo obligatorio']"
           />
+
+          <!-- Botón unirse -->
           <q-btn
-            label="🎮 Unirse a la Sala"
+            label="Unirse"
             color="primary"
             size="lg"
+            unelevated
+            class="full-width submit-btn"
             @click="joinRoom"
             :loading="joiningRoom"
-            class="full-width"
           />
         </q-card-section>
       </q-card>
     </div>
 
-    <!-- Sala Unida -->
-    <div v-else class="joined-room">
-      <q-card class="room-status-card">
-        <q-card-section>
-          <div class="text-h6 text-center">Conectado a la Sala</div>
-          <div class="text-subtitle1 text-center text-primary">
+    <!-- ========================= -->
+    <!-- 🟩 Sección: Sala Unida -->
+    <!-- ========================= -->
+    <div v-else class="joined-room flex flex-center">
+      <q-card class="room-status-card q-pa-md">
+
+        <!-- Info general -->
+        <q-card-section class="text-center">
+          <div class="text-h5 text-bold">Conectado a la Sala</div>
+          <div class="text-subtitle1 text-primary q-mt-xs">
             ID: {{ roomStore.currentRoom }}
           </div>
         </q-card-section>
 
-        <!-- Estado de espera -->
-        <div v-if="roomStore.gameState === 'waiting'" class="text-center q-pa-lg">
-          <q-icon name="schedule" size="xl" color="grey-5" />
-          <div class="text-h6 q-mt-md">Esperando al profesor...</div>
-          <div class="text-caption text-grey">
-            El profesor iniciará el quiz pronto
+        <!-- ===================== -->
+        <!-- ⏳ Estado: Esperando -->
+        <!-- ===================== -->
+        <div
+          v-if="roomStore.gameState === 'waiting'"
+          class="text-center q-pa-lg waiting-section"
+        >
+          <q-icon name="fa-regular fa-clock" size="50px" color="grey-6" />
+
+          <div class="text-h6 q-mt-md">Esperando al profesor…</div>
+          <div class="text-caption text-grey q-mb-md">
+            El quiz comenzará en breve
           </div>
 
-          <!-- Mostrar otros estudiantes conectados -->
+          <!-- Estudiantes conectados -->
           <div v-if="roomStore.students.length > 0" class="q-mt-lg">
-            <div class="text-caption text-grey q-mb-sm">
+            <div class="text-caption text-grey q-mb-xs">
               Estudiantes conectados:
             </div>
-            <div class="row justify-center q-gutter-xs">
+
+            <div class="row justify-center q-gutter-sm">
               <q-badge
                 v-for="student in roomStore.students"
                 :key="student.id"
@@ -67,53 +97,69 @@
           </div>
         </div>
 
-        <!-- Durante el quiz -->
-        <div v-else-if="roomStore.gameState === 'playing'" class="quiz-section">
-          <div class="text-h6 text-center">
-            Pregunta {{ currentQuestionIndex + 1 }} de {{ totalQuestions }}
+        <!-- ==================== -->
+        <!-- 🧩 Estado: Jugando -->
+        <!-- ==================== -->
+        <div v-else-if="roomStore.gameState === 'playing'" class="quiz-section q-pa-md">
+
+          <!-- Progreso -->
+          <div class="text-h6 text-center q-mb-lg">
+            Pregunta {{ currentQuestionIndex + 1 }} / {{ totalQuestions }}
           </div>
 
-          <div v-if="currentQuestion" class="q-pa-md">
-            <div class="question-text text-h6 q-mb-md text-center">
+          <!-- Pregunta -->
+          <div v-if="currentQuestion">
+            <div class="question-text text-h6 text-center q-mb-lg">
               {{ currentQuestion.text }}
             </div>
 
-            <div class="options-grid">
+            <!-- Opciones -->
+            <div class="column q-gutter-sm">
               <q-btn
                 v-for="(option, key) in currentQuestion.options"
                 :key="key"
                 :label="`${key}. ${option}`"
                 color="primary"
                 outline
-                class="option-btn full-width q-mb-sm"
+                rounded
+                class="option-btn"
                 @click="submitAnswer(key)"
                 :disabled="hasAnswered"
               />
             </div>
 
-            <div v-if="hasAnswered" class="answer-feedback q-mt-md text-center">
-              <q-badge :color="isCorrect ? 'positive' : 'negative'" class="q-pa-sm">
-                {{ isCorrect ? '✅ Correcto! +10 puntos' : '❌ Incorrecto' }}
+            <!-- Feedback -->
+            <div v-if="hasAnswered" class="q-mt-lg text-center">
+              <q-badge
+                :color="isCorrect ? 'positive' : 'negative'"
+                class="q-pa-sm text-subtitle1"
+              >
+                {{ isCorrect ? "✅ ¡Correcto! +10 pts" : "❌ Incorrecto" }}
               </q-badge>
             </div>
           </div>
         </div>
 
-        <!-- Quiz terminado -->
-        <div v-else class="quiz-finished text-center q-pa-lg">
-          <q-icon name="celebration" size="xl" color="positive" />
-          <div class="text-h6 q-mt-md">¡Quiz Terminado!</div>
+        <!-- ========================= -->
+        <!-- 🏁 Estado: Quiz terminado -->
+        <!-- ========================= -->
+        <div v-else class="quiz-finished text-center q-pa-xl">
+          <q-icon name="fa-solid fa-party-horn" size="60px" color="positive" />
+
+          <div class="text-h5 q-mt-md">¡Quiz Terminado!</div>
+
           <div class="text-caption text-grey q-mb-md">
-            Tu puntuación final: {{ currentScore }} puntos
+            Tu puntuación final: <strong>{{ currentScore }}</strong> puntos
           </div>
 
           <!-- Leaderboard final -->
-          <div class="final-leaderboard q-mt-md">
-            <div class="text-subtitle2 q-mb-sm">Puntuaciones Finales:</div>
+          <div class="final-leaderboard q-mt-lg">
+            <div class="text-subtitle1 q-mb-sm">Puntuaciones Finales</div>
+
             <div
               v-for="(student, index) in sortedStudents"
               :key="student.id"
-              class="leaderboard-item row items-center q-pa-sm q-mb-xs rounded-borders"
+              class="leaderboard-item row items-center q-pa-sm q-mb-sm rounded-borders"
               :class="{
                 'bg-yellow-2': index === 0,
                 'bg-blue-1': index === 1,
@@ -121,181 +167,175 @@
                 'bg-grey-2': index > 2
               }"
             >
-              <div class="col">
-                <div class="text-weight-medium">
+              <div class="col text-left">
+                <span class="text-weight-medium">
                   {{ index + 1 }}. {{ student.name }}
-                </div>
+                </span>
               </div>
+
               <div class="col-auto">
-                <q-badge color="primary">
-                  {{ student.score }} pts
-                </q-badge>
+                <q-badge color="primary">{{ student.score }} pts</q-badge>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Botón salir -->
         <q-card-actions align="center" class="q-pa-md">
-          <q-btn
-            label="Abandonar Sala"
-            color="negative"
-            @click="leaveRoom"
-          />
+          <q-btn label="Abandonar Sala" color="negative" @click="leaveRoom" />
         </q-card-actions>
+
       </q-card>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoomStore } from '@/stores/room'
-import { useUserStore } from '@/stores/user'
-import socketService from '@/services/socket'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRoomStore } from "@/stores/room";
+import { useUserStore } from "@/stores/user";
+import socketService from "@/services/socket";
 
-const roomStore = useRoomStore()
-const userStore = useUserStore()
+const roomStore = useRoomStore();
+const userStore = useUserStore();
 
-const joiningRoom = ref(false)
-const studentName = ref(userStore.user.name)
-const roomId = ref('')
-const hasAnswered = ref(false)
-const isCorrect = ref(false)
+const joiningRoom = ref(false);
+const studentName = ref(userStore.user.name);
+const roomId = ref("");
 
-const currentQuestion = computed(() => {
-  return roomStore.quiz[roomStore.currentQuestionIndex]
-})
+const hasAnswered = ref(false);
+const isCorrect = ref(false);
 
-const currentQuestionIndex = computed(() => roomStore.currentQuestionIndex)
-const totalQuestions = computed(() => roomStore.quiz.length)
+const currentQuestion = computed(() => roomStore.quiz[roomStore.currentQuestionIndex]);
+const currentQuestionIndex = computed(() => roomStore.currentQuestionIndex);
+const totalQuestions = computed(() => roomStore.quiz.length);
 
 const currentScore = computed(() => {
-  const student = roomStore.students.find(s => s.id === userStore.user.id)
-  return student ? student.score : 0
-})
+  const student = roomStore.students.find((s) => s.id === userStore.user.id);
+  return student ? student.score : 0;
+});
 
-const sortedStudents = computed(() => {
-  return [...roomStore.students].sort((a, b) => b.score - a.score)
-})
+const sortedStudents = computed(() => [...roomStore.students].sort((a, b) => b.score - a.score));
 
+/* -----------------------
+   Socket listeners
+----------------------- */
 onMounted(() => {
-  if (!socketService.isConnected) {
-    socketService.connect()
-  }
+  if (!socketService.isConnected) socketService.connect();
 
-  // Configurar listeners
-  socketService.on('joined-room', (roomId) => {
-    roomStore.setRoom(roomId)
-    joiningRoom.value = false
-  })
+  socketService.on("joined-room", (roomId) => {
+    roomStore.setRoom(roomId);
+    joiningRoom.value = false;
+  });
 
-  socketService.on('user-joined', (students) => {
-    roomStore.updateStudents(students)
-  })
+  socketService.on("user-joined", (students) => roomStore.updateStudents(students));
+  socketService.on("score-update", (students) => roomStore.updateStudents(students));
 
-  socketService.on('score-update', (students) => {
-    roomStore.updateStudents(students)
-  })
+  socketService.on("new-question", (data) => {
+    roomStore.gameState = "playing";
+    roomStore.currentQuestionIndex = data.questionNumber - 1;
+    hasAnswered.value = false;
+    isCorrect.value = false;
+  });
 
-  socketService.on('new-question', (data) => {
-    roomStore.gameState = 'playing'
-    roomStore.currentQuestionIndex = data.questionNumber - 1
-    hasAnswered.value = false
-    isCorrect.value = false
-  })
+  socketService.on("quiz-started", (data) => {
+    roomStore.gameState = "playing";
+    roomStore.currentQuestionIndex = 0;
+    if (data.questions) {
+      roomStore.setQuiz(data.questions);
+    }
+    hasAnswered.value = false;
+    isCorrect.value = false;
+  });
 
-  socketService.on('quiz-started', (data) => {
-    roomStore.gameState = 'playing'
-    roomStore.currentQuestionIndex = 0
-    roomStore.quiz = data.questions || []
-  })
+  socketService.on("answer-feedback", (correct) => (isCorrect.value = correct));
 
-  socketService.on('answer-feedback', (correct) => {
-    isCorrect.value = correct
-  })
+  socketService.on("quiz-finished", (students) => {
+    roomStore.gameState = "finished";
+    roomStore.updateStudents(students);
+  });
 
-  socketService.on('quiz-finished', (students) => {
-    roomStore.gameState = 'finished'
-    roomStore.updateStudents(students)
-  })
+  socketService.on("room-closed", () => leaveRoom());
 
-  socketService.on('room-closed', () => {
-    leaveRoom()
-  })
-
-  socketService.on('user-left', (data) => {
+  socketService.on("user-left", (data) =>
     roomStore.updateStudents(data.updatedStudents)
-  })
-})
+  );
+});
 
 onUnmounted(() => {
-  // Limpiar listeners
-  socketService.off('joined-room')
-  socketService.off('user-joined')
-  socketService.off('score-update')
-  socketService.off('new-question')
-  socketService.off('quiz-started')
-  socketService.off('answer-feedback')
-  socketService.off('quiz-finished')
-  socketService.off('room-closed')
-  socketService.off('user-left')
-})
+  socketService.off("joined-room");
+  socketService.off("user-joined");
+  socketService.off("score-update");
+  socketService.off("new-question");
+  socketService.off("quiz-started");
+  socketService.off("answer-feedback");
+  socketService.off("quiz-finished");
+  socketService.off("room-closed");
+  socketService.off("user-left");
+});
 
+/* -----------------------
+   Actions
+----------------------- */
 const joinRoom = () => {
-  if (!studentName.value.trim() || !roomId.value.trim()) {
-    return
-  }
-  joiningRoom.value = true
-  socketService.joinRoom(roomId.value, studentName.value)
-}
+  if (!studentName.value.trim() || !roomId.value.trim()) return;
+  joiningRoom.value = true;
+  socketService.joinRoom(roomId.value, studentName.value);
+};
 
 const leaveRoom = () => {
-  roomStore.clearRoom()
-}
+  roomStore.clearRoom();
+};
 
 const submitAnswer = (answer) => {
-  if (!roomStore.currentRoom || hasAnswered.value) {
-    return
-  }
+  if (!roomStore.currentRoom || hasAnswered.value) return;
 
   socketService.submitAnswer(roomStore.currentRoom, {
-    answer: answer,
-    timestamp: Date.now()
-  })
+    answer,
+    timestamp: Date.now(),
+  });
 
-  hasAnswered.value = true
-}
+  hasAnswered.value = true;
+};
 </script>
 
 <style scoped>
 .join-room-card {
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  max-width: 420px;
+  width: 100%;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
 }
 
 .room-status-card {
-  border-radius: 15px;
+  max-width: 480px;
+  width: 100%;
+  border-radius: 18px;
+}
+
+.submit-btn {
+  border-radius: 12px;
 }
 
 .option-btn {
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 14px;
 }
 
 .question-text {
-  line-height: 1.4;
-}
-
-.quiz-finished {
-  border-top: 1px solid #e0e0e0;
-}
-
-.leaderboard-item {
-  border: 1px solid #e0e0e0;
+  line-height: 1.5;
 }
 
 .final-leaderboard {
-  max-height: 300px;
+  max-height: 250px;
   overflow-y: auto;
+}
+
+.leaderboard-item {
+  border: 1px solid #dcdcdc;
+}
+
+.waiting-section {
+  transition: all 0.3s ease;
 }
 </style>

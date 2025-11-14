@@ -1,0 +1,79 @@
+/* 🎨 PALETA PRINCIPAL (Vibrante / Marca) */
+:root {
+  /* Colores Principales */
+  --primary-blue: #2D9CDB;
+  --primary-orange: #F2A541;
+  --primary-purple: #9B51E0;
+  --primary-yellow: #F2D52C;
+  --primary-mint: #6FCF97;
+  --primary-red: #F27185;
+
+  /* Paleta Secundaria (Pastel / UI suave) */
+  --pastel-blue: #A7C7E7;
+  --pastel-pink: #F7A8A8;
+  --pastel-yellow: #F7E8A6;
+  --pastel-mint: #B8F0D2;
+  --pastel-lavender: #C8B7E8;
+  --pastel-grey: #5B5B5B;
+
+  /* Paleta de Fondos */
+  --bg-light-blue: linear-gradient(135deg, #80D0FF, #C7E6F2);
+  --bg-purple-gradient: linear-gradient(135deg, #BEA2FF, #F2E1FF);
+  --bg-neutral-cream: #FFF7E0;
+  --bg-dark: #333333;
+
+  /* Paleta de Texto */
+  --text-dark-indigo: #313455;
+  --text-black: #333333;
+  --text-white: #FFFFFF;
+}
+
+/* Clases de utilidad para colores */
+.bg-primary-blue { background-color: var(--primary-blue); }
+.bg-primary-orange { background-color: var(--primary-orange); }
+.bg-primary-purple { background-color: var(--primary-purple); }
+.bg-primary-yellow { background-color: var(--primary-yellow); }
+.bg-primary-mint { background-color: var(--primary-mint); }
+.bg-primary-red { background-color: var(--primary-red); }
+
+.bg-pastel-blue { background-color: var(--pastel-blue); }
+.bg-pastel-pink { background-color: var(--pastel-pink); }
+.bg-pastel-yellow { background-color: var(--pastel-yellow); }
+.bg-pastel-mint { background-color: var(--pastel-mint); }
+.bg-pastel-lavender { background-color: var(--pastel-lavender); }
+.bg-pastel-grey { background-color: var(--pastel-grey); }
+
+.bg-light-blue { background: var(--bg-light-blue); }
+.bg-purple-gradient { background: var(--bg-purple-gradient); }
+.bg-neutral-cream { background: var(--bg-neutral-cream); }
+.bg-dark { background: var(--bg-dark); }
+
+.text-dark-indigo { color: var(--text-dark-indigo); }
+.text-black { color: var(--text-black); }
+.text-white { color: var(--text-white); }
+
+/* Estados de botones */
+.btn-primary {
+  background: var(--primary-blue);
+  color: var(--text-white);
+}
+
+.btn-secondary {
+  background: var(--primary-orange);
+  color: var(--text-white);
+}
+
+.btn-success {
+  background: var(--primary-mint);
+  color: var(--text-dark-indigo);
+}
+
+.btn-warning {
+  background: var(--primary-yellow);
+  color: var(--text-dark-indigo);
+}
+
+.btn-danger {
+  background: var(--primary-red);
+  color: var(--text-white);
+}

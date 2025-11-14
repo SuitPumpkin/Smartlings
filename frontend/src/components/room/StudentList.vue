@@ -9,7 +9,7 @@
 
     <q-card-section class="q-pt-none">
       <div v-if="students.length === 0" class="text-center q-py-lg">
-        <q-icon name="people_outline" size="xl" color="grey-5" />
+        <q-icon name="fa-regular fa-users" size="xl" color="grey-5" />
         <div class="text-grey q-mt-sm">Esperando estudiantes...</div>
       </div>
 

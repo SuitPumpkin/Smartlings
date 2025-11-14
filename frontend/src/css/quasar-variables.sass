@@ -1,24 +1,62 @@
-// Quasar Sass (& SCSS) Variables
-// --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
+// Variables de Quasar personalizadas con la paleta SMARTLINGS
 
-// Check documentation for full list of Quasar variables
-
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
-
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation site.
-
-$primary   : #2D4CDB
+// Colores principales
+$primary   : #2D9CDB
 $secondary : #F2A541
-$accent    : #F2D53c
+$accent    : #9B51E0
 
-$dark      : #1D1D1D
+$dark      : #333333
 
 $positive  : #6FCF97
-$negative  : #FB7186
-$info      : #A7C7E7
-$warning   : #F2E8A6
+$negative  : #F27185
+$info      : #F2D52C
+$warning   : #F2A541
+
+// Colores personalizados adicionales
+$pastel-blue: #A7C7E7
+$pastel-pink: #F7A8A8
+$pastel-yellow: #F7E8A6
+$pastel-mint: #B8F0D2
+$pastel-lavender: #C8B7E8
+$pastel-grey: #5B5B5B
+
+// Fondos
+$bg-light-blue: linear-gradient(135deg, #80D0FF, #C7E6F2)
+$bg-purple-gradient: linear-gradient(135deg, #BEA2FF, #F2E1FF)
+$bg-neutral-cream: #FFF7E0
+$bg-dark: #333333
+
+// Texto
+$text-dark-indigo: #313455
+$text-black: #333333
+$text-white: #FFFFFF
+
+// Aplicar colores a componentes Quasar
+.body--light
+  background: $bg-neutral-cream
+
+// Personalizar botones
+.q-btn
+  border-radius: 10px
+  font-weight: 600
+
+.q-btn--primary
+  background: $primary
+  color: $text-white
+
+.q-btn--secondary
+  background: $secondary
+  color: $text-white
+
+// Personalizar cards
+.q-card
+  border-radius: 15px
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08)
+
+// Personalizar inputs
+.q-field--outlined .q-field__control
+  border-radius: 10px
+  border: 1px solid $pastel-grey
+
+.q-field--focused .q-field__control
+  border-color: $primary

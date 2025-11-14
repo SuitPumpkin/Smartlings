@@ -1,3 +1,4 @@
+// src/services/socketService.js
 import { io } from 'socket.io-client'
 
 class SocketService {
@@ -6,69 +7,106 @@ class SocketService {
     this.isConnected = false
   }
 
+  /**
+   * Inicializa la conexión al servidor Socket.IO
+   */
   connect() {
-    this.socket = io('http://localhost:3000')
+    if (this.socket) {
+      console.warn("⚠️ Socket ya estaba conectado, reusando instancia...")
+      return this.socket
+    }
+
+    this.socket = io('http://localhost:3000', {
+      transports: ['websocket'],
+      autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 5
+    })
 
     this.socket.on('connect', () => {
       this.isConnected = true
-      console.log('✅ Conectado al servidor')
+      console.log('✅ Conectado al servidor WebSocket')
     })
 
     this.socket.on('disconnect', () => {
       this.isConnected = false
-      console.log('❌ Desconectado del servidor')
+      console.log('❌ Desconectado del servidor WebSocket')
     })
 
     return this.socket
   }
 
+  /**
+   * Desconecta el socket y limpia la instancia
+   */
   disconnect() {
     if (this.socket) {
       this.socket.disconnect()
       this.socket = null
+      this.isConnected = false
+      console.log("🔌 Socket desconectado manualmente")
     }
   }
 
-  // Emit events
+  /**
+   * Emitir eventos de forma segura
+   */
+  emit(event, ...args) {
+    if (!this.socket || !this.isConnected) {
+      console.error(`🚫 No se puede emitir "${event}", socket no conectado.`)
+      return
+    }
+    this.socket.emit(event, ...args)
+  }
+
+  /**
+   * Registrar listeners (evitando registrar duplicados)
+   */
+  on(event, callback) {
+    if (!this.socket) return
+
+    this.socket.off(event) // prevenir duplicados
+    this.socket.on(event, callback)
+  }
+
+  /**
+   * Remover listeners
+   */
+  off(event) {
+    if (!this.socket) return
+    this.socket.off(event)
+  }
+
+  // ================================
+  // Eventos de sala
+  // ================================
+
   createRoom(teacherName) {
-    this.socket.emit('create-room', teacherName)
+    this.emit('create-room', teacherName)
   }
 
   joinRoom(roomId, studentName) {
-    this.socket.emit('join-room', roomId, studentName)
+    this.emit('join-room', roomId, studentName)
   }
 
   addQuestion(roomId, question) {
-    this.socket.emit('add-question', roomId, question)
+    this.emit('add-question', roomId, question)
   }
 
   startQuiz(roomId) {
-    this.socket.emit('start-quiz', roomId)
+    this.emit('start-quiz', roomId)
   }
 
   nextQuestion(roomId) {
-    this.socket.emit('next-question', roomId)
+    this.emit('next-question', roomId)
   }
 
   submitAnswer(roomId, answerData) {
-    this.socket.emit('submit-answer', roomId, answerData)
+    this.emit('submit-answer', roomId, answerData)
   }
 
   closeRoom(roomId) {
-    this.socket.emit('close-room', roomId)
-  }
-
-  // Listen to events
-  on(event, callback) {
-    if (this.socket) {
-      this.socket.on(event, callback)
-    }
-  }
-
-  off(event, callback) {
-    if (this.socket) {
-      this.socket.off(event, callback)
-    }
+    this.emit('close-room', roomId)
   }
 }
 

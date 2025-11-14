@@ -1,94 +1,69 @@
 <template>
-  <q-page class="dashboard-page bg-blue-grey-1">
-    <!-- Header con bienvenida -->
-    <div class="dashboard-header bg-primary text-white q-pa-lg text-center">
-      <div class="text-h4 q-mb-sm">¡Bienvenido, {{ userStore.user.name }}! 👋</div>
-      <div class="text-subtitle1">
-        {{ userStore.isTeacher ? 'Profesor' : 'Estudiante' }} · {{ userStore.user.username }}
+  <q-page class="dashboard-page">
+
+    <!-- Bienvenida estilo prototipo -->
+    <div class="welcome-container text-center">
+      <img src="/duo.gif" alt="Smartlings" class="welcome-logo" />
+
+      <div class="welcome-title">
+        ¡Hola, {{ userStore.user.name }}! 👋
+      </div>
+
+      <div class="welcome-subtitle">
+        {{ userStore.isTeacher ? "Profesor" : "Estudiante" }} · {{ userStore.user.username }}
       </div>
     </div>
 
-    <!-- Botón central de acción -->
-    <div class="row justify-center q-pt-xl">
-      <div class="col-12 col-md-6 text-center">
-        <q-btn
-          :label="userStore.isTeacher ? 'Crear Sala de Clase' : 'Unirse a una Sesión'"
-          color="primary"
-          size="xl"
-          class="action-btn q-px-xl q-py-md"
-          @click="handleAction"
+    <!-- Acción principal -->
+    <div class="action-wrapper q-mt-xl text-center">
+      <q-btn
+        :label="userStore.isTeacher ? 'Crear Sala de Clase' : 'Unirse a una Sesión'"
+        class="primary-action"
+        @click="handleAction"
+      />
+      <p class="action-caption">
+        {{ userStore.isTeacher
+          ? "Inicia una nueva sesión interactiva"
+          : "Participa en actividades en vivo" }}
+      </p>
+    </div>
+
+    <!-- Contenido temático -->
+    <div class="content-section q-mt-xl">
+      <div class="section-title text-center">Contenido Temático 📚</div>
+
+      <div class="row q-col-gutter-lg q-mt-md justify-center">
+        <div
+          class="col-12 col-sm-6 col-md-4"
+          v-for="item in sections"
+          :key="item.id"
         >
-          <template v-slot:loading>
-            <q-spinner-gears />
-          </template>
-        </q-btn>
-        <div class="text-caption text-grey q-mt-sm">
-          {{ userStore.isTeacher ?
-            'Inicia una nueva sesión interactiva' :
-            'Participa en actividades en vivo'
-          }}
-        </div>
-      </div>
-    </div>
-
-    <!-- Secciones de contenido temático -->
-    <div class="content-sections q-px-lg q-pt-xl">
-      <div class="text-h5 text-center q-mb-lg">Contenido Temático 📚</div>
-
-      <div class="row q-col-gutter-lg justify-center">
-        <div class="col-12 col-sm-6 col-md-4">
-          <q-card class="section-card cursor-pointer" @click="openSection('matematicas')">
-            <q-card-section class="text-center">
-              <div class="text-h2 q-mb-md">🔢</div>
-              <div class="text-h6">Matemáticas</div>
-              <div class="text-caption text-grey">
-                Álgebra, geometría y cálculo
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
-
-        <div class="col-12 col-sm-6 col-md-4">
-          <q-card class="section-card cursor-pointer" @click="openSection('ciencias')">
-            <q-card-section class="text-center">
-              <div class="text-h2 q-mb-md">🧪</div>
-              <div class="text-h6">Ciencias</div>
-              <div class="text-caption text-grey">
-                Física, química y biología
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
-
-        <div class="col-12 col-sm-6 col-md-4">
-          <q-card class="section-card cursor-pointer" @click="openSection('historia')">
-            <q-card-section class="text-center">
-              <div class="text-h2 q-mb-md">📜</div>
-              <div class="text-h6">Historia</div>
-              <div class="text-caption text-grey">
-                Eventos históricos y cultura
-              </div>
+          <q-card class="theme-card cursor-pointer" @click="openSection(item.id)">
+            <q-card-section class="text-center q-pa-lg">
+              <div class="theme-icon">{{ item.icon }}</div>
+              <div class="theme-title">{{ item.title }}</div>
+              <div class="theme-sub">{{ item.desc }}</div>
             </q-card-section>
           </q-card>
         </div>
       </div>
     </div>
 
-    <!-- Dialog para secciones -->
+    <!-- Dialog -->
     <q-dialog v-model="showSectionDialog">
-      <q-card style="width: 500px; max-width: 80vw;">
+      <q-card style="width: 480px; max-width: 90vw;">
         <q-card-section>
           <div class="text-h6">{{ currentSectionTitle }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <div class="text-body1">
+          <p class="text-body1">
             Contenido de {{ currentSectionTitle }} en desarrollo...
-          </div>
-          <div class="q-mt-md">
-            Próximamente tendrás acceso a lecciones interactivas,
-            ejercicios gamificados y mucho más sobre este tema.
-          </div>
+          </p>
+          <p class="q-mt-md">
+            Próximamente tendrás acceso a lecciones interactivas, ejercicios
+            gamificados y mucho más sobre este tema.
+          </p>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -99,72 +74,144 @@
   </q-page>
 </template>
 
+
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user";
 
-const router = useRouter()
-const userStore = useUserStore()
+const router = useRouter();
+const userStore = useUserStore();
 
-const showSectionDialog = ref(false)
-const currentSection = ref('')
+const showSectionDialog = ref(false);
+const currentSection = ref("");
+
+const sections = [
+  {
+    id: "matematicas",
+    icon: "🔢",
+    title: "Matemáticas",
+    desc: "Álgebra, geometría y cálculo",
+  },
+  {
+    id: "ciencias",
+    icon: "🧪",
+    title: "Ciencias",
+    desc: "Física, química y biología",
+  },
+  {
+    id: "historia",
+    icon: "📜",
+    title: "Historia",
+    desc: "Eventos históricos y cultura",
+  },
+];
 
 const currentSectionTitle = computed(() => {
   const titles = {
-    matematicas: 'Matemáticas',
-    ciencias: 'Ciencias',
-    historia: 'Historia'
-  }
-  return titles[currentSection.value] || 'Contenido'
-})
+    matematicas: "Matemáticas",
+    ciencias: "Ciencias",
+    historia: "Historia",
+  };
+  return titles[currentSection.value] || "Contenido";
+});
 
 const handleAction = () => {
-  if (userStore.isTeacher) {
-    router.push('/teacher')
-  } else {
-    router.push('/student')
-  }
-}
+  if (userStore.isTeacher) router.push("/teacher");
+  else router.push("/student");
+};
 
 const openSection = (section) => {
-  currentSection.value = section
-  showSectionDialog.value = true
-}
+  currentSection.value = section;
+  showSectionDialog.value = true;
+};
 </script>
 
+
 <style scoped>
+/* Fondo pastel Smartlings */
 .dashboard-page {
+  background: #f8f6f9;
   min-height: 100vh;
 }
 
-.dashboard-header {
-  border-radius: 0 0 30px 30px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+/* Bienvenida estilo prototipo */
+.welcome-container {
+  padding-top: 40px;
+  padding-bottom: 10px;
 }
 
-.action-btn {
-  border-radius: 25px;
-  font-weight: bold;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-  transition: transform 0.3s ease;
+.welcome-logo {
+  width: 320px;
+  margin-bottom: 12px;
 }
 
-.action-btn:hover {
-  transform: translateY(-2px);
+.welcome-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 4px;
 }
 
-.section-card {
-  border-radius: 15px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  min-height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.welcome-subtitle {
+  font-size: 14px;
+  color: #777;
 }
 
-.section-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+/* Acción principal */
+.primary-action {
+  background: #ff6f91;
+  color: white;
+  padding: 14px 26px;
+  font-size: 18px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(255, 111, 145, 0.3);
+  transition: 0.2s ease;
+}
+
+.primary-action:hover {
+  transform: translateY(-3px);
+}
+
+.action-caption {
+  font-size: 13px;
+  color: #888;
+  margin-top: 8px;
+}
+
+/* Título del contenido */
+.section-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Tarjetas temáticas */
+.theme-card {
+  background: white;
+  border-radius: 22px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  transition: 0.2s ease;
+}
+
+.theme-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.theme-icon {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.theme-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.theme-sub {
+  font-size: 13px;
+  color: #777;
 }
 </style>

@@ -8,54 +8,94 @@
     </q-card-section>
 
     <q-card-section class="q-pt-none">
-      <!-- Constructor de Preguntas -->
       <div class="q-gutter-y-md">
-        <div v-for="(question, index) in localQuestions" :key="question.id" class="question-item q-pa-md rounded-borders bg-grey-2">
-          <div class="text-weight-medium">Pregunta {{ index + 1 }}</div>
-          <div class="q-mt-sm">{{ question.text }}</div>
-          <div class="q-mt-sm">
-            <span v-for="(option, key) in question.options" :key="key" class="q-mr-sm">
-              <q-badge :color="key === question.correctAnswer ? 'positive' : 'grey'">
-                {{ key }}: {{ option }}
-              </q-badge>
-            </span>
+
+        <!-- Estado del quiz -->
+        <div class="quiz-status q-pa-md bg-blue-1 rounded-borders">
+          <div class="text-weight-medium">
+            Estado:
+            <q-badge
+              :color="gameStateColor"
+              class="q-ml-sm"
+            >
+              {{ gameStateLabel }}
+            </q-badge>
           </div>
-          <q-btn
-            icon="delete"
-            color="negative"
-            flat
-            round
-            size="sm"
-            class="absolute-top-right q-ma-xs"
-            @click="removeQuestion(index)"
-          />
+          <div class="text-caption text-grey q-mt-sm">
+            {{ roomStore.quiz.length }} pregunta(s) agregada(s)
+          </div>
         </div>
 
+        <!-- Lista de preguntas -->
+        <div v-if="roomStore.quiz.length === 0" class="text-center q-py-lg">
+          <q-icon name="fa-regular fa-list" size="xl" color="grey-5" />
+          <div class="text-grey q-mt-sm">No hay preguntas aún</div>
+        </div>
+
+        <div
+          v-for="(question, index) in roomStore.quiz"
+          :key="question.id"
+          class="question-item q-pa-md rounded-borders bg-grey-2"
+        >
+          <div class="row items-start q-gutter-md">
+            <div class="col">
+              <div class="text-weight-medium">Pregunta {{ index + 1 }}</div>
+              <div class="q-mt-sm">{{ question.text }}</div>
+
+              <div class="q-mt-sm row q-gutter-xs flex-wrap">
+                <q-badge
+                  v-for="(option, key) in question.options"
+                  :key="key"
+                  :color="key === question.correctAnswer ? 'positive' : 'grey'"
+                >
+                  {{ key }}: {{ option }}
+                </q-badge>
+              </div>
+            </div>
+
+            <div class="col-auto">
+              <q-btn
+                icon="fa-solid fa-trash"
+                color="negative"
+                flat
+                round
+                size="sm"
+                @click="removeQuestion(question.id)"
+                v-if="!isQuizActive"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón agregar pregunta -->
         <q-btn
           label="Agregar Pregunta"
           color="primary"
           outline
           class="full-width"
           @click="showAddQuestionDialog = true"
+          :disable="isQuizActive"
         />
 
+        <!-- Botones de quiz -->
         <div class="row q-col-gutter-sm q-mt-md">
           <div class="col-6">
             <q-btn
               label="Iniciar Quiz"
               color="positive"
               class="full-width"
-              :disabled="localQuestions.length === 0"
+              :disable="roomStore.quiz.length === 0 || isQuizActive"
               @click="startQuiz"
             />
           </div>
+
           <div class="col-6">
             <q-btn
-              label="Siguiente Pregunta"
+              label="Siguiente"
               color="primary"
               class="full-width"
               @click="nextQuestion"
-              :disabled="!isQuizActive"
+              :disable="!isQuizActive"
             />
           </div>
         </div>
@@ -70,22 +110,23 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <q-form @submit="addQuestion" class="q-gutter-md">
+          <q-form ref="formRef" class="q-gutter-md" @submit="addQuestion">
+
             <q-input
               v-model="newQuestion.text"
               label="Texto de la pregunta"
               type="textarea"
               outlined
-              :rules="[val => !!val || 'Campo obligatorio']"
+              :rules="[v => !!v || 'Campo obligatorio']"
             />
 
             <div class="row q-col-gutter-sm">
-              <div class="col-6" v-for="opt in ['A', 'B', 'C', 'D']" :key="opt">
+              <div class="col-6" v-for="opt in ['A','B','C','D']" :key="opt">
                 <q-input
                   v-model="newQuestion.options[opt]"
                   :label="`Opción ${opt}`"
                   outlined
-                  :rules="[val => !!val || 'Campo obligatorio']"
+                  :rules="[v => !!v || 'Campo obligatorio']"
                 />
               </div>
             </div>
@@ -95,14 +136,14 @@
               :options="correctOptions"
               label="Respuesta correcta"
               outlined
-              :rules="[val => !!val || 'Selecciona la respuesta correcta']"
+              :rules="[v => !!v || 'Selecciona la respuesta correcta']"
             />
           </q-form>
         </q-card-section>
 
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" color="primary" @click="cancelQuestion" />
-          <q-btn label="Agregar" color="positive" @click="addQuestion" />
+          <q-btn label="Agregar" color="positive" type="submit" @click="submitForm" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -110,14 +151,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoomStore } from '@/stores/room'
+import { ref, computed } from 'vue'
 import socketService from '@/services/socket'
+import { useRoomStore } from '@/stores/room'
 
 const roomStore = useRoomStore()
-const showAddQuestionDialog = ref(false)
-const localQuestions = ref([])
 
+// UI
+const showAddQuestionDialog = ref(false)
+const formRef = ref(null)
+
+// Pregunta temporal
 const newQuestion = ref({
   text: '',
   options: { A: '', B: '', C: '', D: '' },
@@ -131,51 +175,70 @@ const correctOptions = [
   { label: 'Opción D', value: 'D' }
 ]
 
+// Estado del quiz
 const isQuizActive = computed(() => roomStore.gameState === 'playing')
 
-onMounted(() => {
-  // Escuchar eventos del quiz
-  socketService.on('quiz-started', () => {
-    roomStore.gameState = 'playing'
-  })
-
-  socketService.on('quiz-finished', () => {
-    roomStore.gameState = 'finished'
-  })
+const gameStateLabel = computed(() => {
+  const states = {
+    waiting: 'Esperando...',
+    playing: 'En progreso',
+    finished: 'Terminado'
+  }
+  return states[roomStore.gameState] || 'Desconocido'
 })
 
+const gameStateColor = computed(() => {
+  const colors = {
+    waiting: 'grey',
+    playing: 'positive',
+    finished: 'warning'
+  }
+  return colors[roomStore.gameState] || 'grey'
+})
+
+// =============================
+//   SOCKET LISTENERS
+// =============================
+
+// =============================
+//   FUNCIÓN: agregar pregunta
+// =============================
+const submitForm = () => {
+  formRef.value.submit()
+}
+
 const addQuestion = () => {
-  if (!newQuestion.value.text || !newQuestion.value.correctAnswer) {
-    return
-  }
-
-  // Validar que todas las opciones tengan texto
-  for (let key in newQuestion.value.options) {
-    if (!newQuestion.value.options[key]) {
-      return
-    }
-  }
-
   const question = {
-    id: Date.now(),
-    ...newQuestion.value
+    id: crypto.randomUUID(),
+    text: newQuestion.value.text,
+    options: { ...newQuestion.value.options },
+    correctAnswer: newQuestion.value.correctAnswer
   }
 
-  localQuestions.value.push(question)
-
-  // Enviar al servidor
-  if (roomStore.currentRoom) {
-    socketService.addQuestion(roomStore.currentRoom, question)
-  }
+  socketService.addQuestion(roomStore.currentRoom, question)
 
   resetNewQuestion()
   showAddQuestionDialog.value = false
 }
 
-const removeQuestion = (index) => {
-  localQuestions.value.splice(index, 1)
+const removeQuestion = (id) => {
+  roomStore.removeQuestion(id)
 }
 
+// =============================
+//   CONTROL DEL QUIZ
+// =============================
+const startQuiz = () => {
+  socketService.startQuiz(roomStore.currentRoom)
+}
+
+const nextQuestion = () => {
+  socketService.nextQuestion(roomStore.currentRoom)
+}
+
+// =============================
+//   RESET FORM
+// =============================
 const resetNewQuestion = () => {
   newQuestion.value = {
     text: '',
@@ -188,24 +251,6 @@ const cancelQuestion = () => {
   resetNewQuestion()
   showAddQuestionDialog.value = false
 }
-
-const startQuiz = () => {
-  if (roomStore.currentRoom && localQuestions.value.length > 0) {
-    // Primero enviar todas las preguntas al servidor
-    localQuestions.value.forEach(question => {
-      socketService.addQuestion(roomStore.currentRoom, question)
-    })
-
-    // Luego iniciar el quiz
-    socketService.startQuiz(roomStore.currentRoom)
-  }
-}
-
-const nextQuestion = () => {
-  if (roomStore.currentRoom) {
-    socketService.nextQuestion(roomStore.currentRoom)
-  }
-}
 </script>
 
 <style scoped>
@@ -217,5 +262,15 @@ const nextQuestion = () => {
 .question-item {
   position: relative;
   border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.question-item:hover {
+  background-color: #e8eef7;
+  border-color: #1976d2;
+}
+
+.quiz-status {
+  border: 2px solid var(--q-primary);
 }
 </style>

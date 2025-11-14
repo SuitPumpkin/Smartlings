@@ -87,12 +87,21 @@ io.on('connection', (socket) => {
   socket.on('add-question', (roomId, question) => {
     const room = rooms.get(roomId);
     if (room && room.teacher.socketId === socket.id) {
+      // Guardar la pregunta tal como viene desde el cliente (con su id)
       room.quiz.push({
         ...question,
-        id: Date.now() + Math.random(), // ID único
         answers: new Map() // Respuestas de estudiantes
       });
-      io.to(room.teacher.socketId).emit('question-added', room.quiz);
+
+      // Enviar lista de preguntas al profesor (serializando Maps)
+      const sanitized = room.quiz.map(q => ({
+        id: q.id,
+        text: q.text,
+        options: q.options,
+        correctAnswer: q.correctAnswer
+      }));
+
+      io.to(room.teacher.socketId).emit('questions-updated', sanitized);
       console.log(`❓ Pregunta agregada al quiz en sala ${roomId}`);
     }
   });
@@ -109,9 +118,23 @@ io.on('connection', (socket) => {
       });
       
       const currentQuestion = room.quiz[0];
+      // Serializar preguntas para clientes
+      const sanitizedQuestions = room.quiz.map(q => ({
+        id: q.id,
+        text: q.text,
+        options: q.options,
+        correctAnswer: q.correctAnswer
+      }));
+
       io.to(roomId).emit('quiz-started', {
         totalQuestions: room.quiz.length,
-        firstQuestion: currentQuestion
+        firstQuestion: {
+          id: currentQuestion.id,
+          text: currentQuestion.text,
+          options: currentQuestion.options,
+          correctAnswer: currentQuestion.correctAnswer
+        },
+        questions: sanitizedQuestions
       });
       
       console.log(`🎯 Quiz iniciado en sala ${roomId} con ${room.quiz.length} preguntas`);
@@ -126,8 +149,14 @@ io.on('connection', (socket) => {
       
       if (room.currentQuestionIndex < room.quiz.length) {
         const question = room.quiz[room.currentQuestionIndex];
+        const sanitizedQuestion = {
+          id: question.id,
+          text: question.text,
+          options: question.options,
+          correctAnswer: question.correctAnswer
+        };
         io.to(roomId).emit('new-question', {
-          question: question,
+          question: sanitizedQuestion,
           questionNumber: room.currentQuestionIndex + 1,
           totalQuestions: room.quiz.length
         });
