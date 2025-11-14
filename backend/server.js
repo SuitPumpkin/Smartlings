@@ -39,6 +39,7 @@ io.on('connection', (socket) => {
       quiz: [], // Array para almacenar preguntas
       currentQuestionIndex: -1, // Índice de pregunta actual
       questionTimer: null,
+      messages: [], // Array para el chat
       createdAt: new Date()
     };
     
@@ -265,6 +266,48 @@ io.on('connection', (socket) => {
       
       rooms.delete(roomId);
       userToRoom.delete(socket.id);
+    }
+  });
+
+  // ========================
+  // Chat - Enviar mensaje
+  // ========================
+  socket.on('send-message', (roomId, messageData) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    // Obtener el usuario (profesor o estudiante)
+    let userName = 'Anónimo';
+    if (room.teacher.socketId === socket.id) {
+      userName = room.teacher.name;
+    } else {
+      const student = room.students.get(socket.id);
+      if (student) {
+        userName = student.name;
+      }
+    }
+
+    const message = {
+      id: Date.now() + Math.random(),
+      userName: userName,
+      text: messageData.text,
+      timestamp: new Date().toISOString(),
+      senderType: room.teacher.socketId === socket.id ? 'teacher' : 'student'
+    };
+
+    // Guardar en historial
+    room.messages.push(message);
+
+    // Emitir a toda la sala
+    io.to(roomId).emit('new-message', message);
+    console.log(`💬 Mensaje en ${roomId} de ${userName}: ${messageData.text}`);
+  });
+
+  // Obtener historial de mensajes
+  socket.on('get-messages', (roomId) => {
+    const room = rooms.get(roomId);
+    if (room) {
+      socket.emit('messages-history', room.messages);
     }
   });
 });

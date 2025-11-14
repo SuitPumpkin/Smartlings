@@ -54,6 +54,14 @@ const sortedStudents = computed(() => {
 .student-list-card {
   border-radius: 15px;
   height: 100%;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.students-container {
+  overflow-y: auto;
+  flex: 1;
 }
 
 .student-item {

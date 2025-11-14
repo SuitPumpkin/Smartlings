@@ -108,6 +108,18 @@ class SocketService {
   closeRoom(roomId) {
     this.emit('close-room', roomId)
   }
+
+  // ================================
+  // Eventos de chat
+  // ================================
+
+  sendMessage(roomId, text) {
+    this.emit('send-message', roomId, { text })
+  }
+
+  getMessages(roomId) {
+    this.emit('get-messages', roomId)
+  }
 }
 
 export default new SocketService()

@@ -100,16 +100,21 @@
           </div>
 
           <!-- 🧑‍🎓 Lista de estudiantes -->
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-6 col-lg-4">
             <StudentList :students="roomStore.students" />
           </div>
 
           <!-- 📝 Gestor de Quiz -->
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-6 col-lg-4">
             <QuizManager
               :room-id="roomStore.currentRoom"
               :students="roomStore.students"
             />
+          </div>
+
+          <!-- 💬 Chat -->
+          <div class="col-12 col-lg-4">
+            <ChatBox />
           </div>
 
         </div>
@@ -127,6 +132,7 @@ import { useUserStore } from '@/stores/user'
 import socketService from '@/services/socket'
 import StudentList from '@/components/room/StudentList.vue'
 import QuizManager from '@/components/room/QuizManager.vue'
+import ChatBox from '@/components/room/ChatBox.vue'
 
 const roomStore = useRoomStore()
 const userStore = useUserStore()
@@ -226,6 +232,15 @@ const closeRoom = () => {
 /* Animación suave */
 .fade-in-up {
   animation: fadeInUp 0.35s ease;
+}
+
+.active-room {
+  display: flex;
+  flex-direction: column;
+}
+
+.active-room .row {
+  min-height: 600px;
 }
 
 @keyframes fadeInUp {

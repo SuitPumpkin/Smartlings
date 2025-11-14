@@ -257,6 +257,14 @@ const cancelQuestion = () => {
 .quiz-manager-card {
   border-radius: 15px;
   height: 100%;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.quiz-manager-card > q-card-section:nth-child(2) {
+  overflow-y: auto;
+  flex: 1;
 }
 
 .question-item {

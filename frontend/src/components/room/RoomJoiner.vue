@@ -53,139 +53,151 @@
     <!-- ========================= -->
     <!-- 🟩 Sección: Sala Unida -->
     <!-- ========================= -->
-    <div v-else class="joined-room flex flex-center">
-      <q-card class="room-status-card q-pa-md">
+    <div v-else class="joined-room">
+      <div class="row q-col-gutter-lg">
 
-        <!-- Info general -->
-        <q-card-section class="text-center">
-          <div class="text-h5 text-bold">Conectado a la Sala</div>
-          <div class="text-subtitle1 text-primary q-mt-xs">
-            ID: {{ roomStore.currentRoom }}
-          </div>
-        </q-card-section>
+        <!-- Columna: Quiz -->
+        <div class="col-12 col-md-8">
+          <q-card class="room-status-card q-pa-md">
 
-        <!-- ===================== -->
-        <!-- ⏳ Estado: Esperando -->
-        <!-- ===================== -->
-        <div
-          v-if="roomStore.gameState === 'waiting'"
-          class="text-center q-pa-lg waiting-section"
-        >
-          <q-icon name="fa-regular fa-clock" size="50px" color="grey-6" />
+            <!-- Info general -->
+            <q-card-section class="text-center">
+              <div class="text-h5 text-bold">Conectado a la Sala</div>
+              <div class="text-subtitle1 text-primary q-mt-xs">
+                ID: {{ roomStore.currentRoom }}
+              </div>
+            </q-card-section>
 
-          <div class="text-h6 q-mt-md">Esperando al profesor…</div>
-          <div class="text-caption text-grey q-mb-md">
-            El quiz comenzará en breve
-          </div>
-
-          <!-- Estudiantes conectados -->
-          <div v-if="roomStore.students.length > 0" class="q-mt-lg">
-            <div class="text-caption text-grey q-mb-xs">
-              Estudiantes conectados:
-            </div>
-
-            <div class="row justify-center q-gutter-sm">
-              <q-badge
-                v-for="student in roomStore.students"
-                :key="student.id"
-                color="secondary"
-                class="q-pa-sm"
-              >
-                {{ student.name }}
-              </q-badge>
-            </div>
-          </div>
-        </div>
-
-        <!-- ==================== -->
-        <!-- 🧩 Estado: Jugando -->
-        <!-- ==================== -->
-        <div v-else-if="roomStore.gameState === 'playing'" class="quiz-section q-pa-md">
-
-          <!-- Progreso -->
-          <div class="text-h6 text-center q-mb-lg">
-            Pregunta {{ currentQuestionIndex + 1 }} / {{ totalQuestions }}
-          </div>
-
-          <!-- Pregunta -->
-          <div v-if="currentQuestion">
-            <div class="question-text text-h6 text-center q-mb-lg">
-              {{ currentQuestion.text }}
-            </div>
-
-            <!-- Opciones -->
-            <div class="column q-gutter-sm">
-              <q-btn
-                v-for="(option, key) in currentQuestion.options"
-                :key="key"
-                :label="`${key}. ${option}`"
-                color="primary"
-                outline
-                rounded
-                class="option-btn"
-                @click="submitAnswer(key)"
-                :disabled="hasAnswered"
-              />
-            </div>
-
-            <!-- Feedback -->
-            <div v-if="hasAnswered" class="q-mt-lg text-center">
-              <q-badge
-                :color="isCorrect ? 'positive' : 'negative'"
-                class="q-pa-sm text-subtitle1"
-              >
-                {{ isCorrect ? "✅ ¡Correcto! +10 pts" : "❌ Incorrecto" }}
-              </q-badge>
-            </div>
-          </div>
-        </div>
-
-        <!-- ========================= -->
-        <!-- 🏁 Estado: Quiz terminado -->
-        <!-- ========================= -->
-        <div v-else class="quiz-finished text-center q-pa-xl">
-          <q-icon name="fa-solid fa-party-horn" size="60px" color="positive" />
-
-          <div class="text-h5 q-mt-md">¡Quiz Terminado!</div>
-
-          <div class="text-caption text-grey q-mb-md">
-            Tu puntuación final: <strong>{{ currentScore }}</strong> puntos
-          </div>
-
-          <!-- Leaderboard final -->
-          <div class="final-leaderboard q-mt-lg">
-            <div class="text-subtitle1 q-mb-sm">Puntuaciones Finales</div>
-
+            <!-- ===================== -->
+            <!-- ⏳ Estado: Esperando -->
+            <!-- ===================== -->
             <div
-              v-for="(student, index) in sortedStudents"
-              :key="student.id"
-              class="leaderboard-item row items-center q-pa-sm q-mb-sm rounded-borders"
-              :class="{
-                'bg-yellow-2': index === 0,
-                'bg-blue-1': index === 1,
-                'bg-green-1': index === 2,
-                'bg-grey-2': index > 2
-              }"
+              v-if="roomStore.gameState === 'waiting'"
+              class="text-center q-pa-lg waiting-section"
             >
-              <div class="col text-left">
-                <span class="text-weight-medium">
-                  {{ index + 1 }}. {{ student.name }}
-                </span>
+              <q-icon name="fa-regular fa-clock" size="50px" color="grey-6" />
+
+              <div class="text-h6 q-mt-md">Esperando al profesor…</div>
+              <div class="text-caption text-grey q-mb-md">
+                El quiz comenzará en breve
               </div>
 
-              <div class="col-auto">
-                <q-badge color="primary">{{ student.score }} pts</q-badge>
+              <!-- Estudiantes conectados -->
+              <div v-if="roomStore.students.length > 0" class="q-mt-lg">
+                <div class="text-caption text-grey q-mb-xs">
+                  Estudiantes conectados:
+                </div>
+
+                <div class="row justify-center q-gutter-sm">
+                  <q-badge
+                    v-for="student in roomStore.students"
+                    :key="student.id"
+                    color="secondary"
+                    class="q-pa-sm"
+                  >
+                    {{ student.name }}
+                  </q-badge>
+                </div>
               </div>
             </div>
-          </div>
+
+            <!-- ==================== -->
+            <!-- 🧩 Estado: Jugando -->
+            <!-- ==================== -->
+            <div v-else-if="roomStore.gameState === 'playing'" class="quiz-section q-pa-md">
+
+              <!-- Progreso -->
+              <div class="text-h6 text-center q-mb-lg">
+                Pregunta {{ currentQuestionIndex + 1 }} / {{ totalQuestions }}
+              </div>
+
+              <!-- Pregunta -->
+              <div v-if="currentQuestion">
+                <div class="question-text text-h6 text-center q-mb-lg">
+                  {{ currentQuestion.text }}
+                </div>
+
+                <!-- Opciones -->
+                <div class="column q-gutter-sm">
+                  <q-btn
+                    v-for="(option, key) in currentQuestion.options"
+                    :key="key"
+                    :label="`${key}. ${option}`"
+                    color="primary"
+                    outline
+                    rounded
+                    class="option-btn"
+                    @click="submitAnswer(key)"
+                    :disabled="hasAnswered"
+                  />
+                </div>
+
+                <!-- Feedback -->
+                <div v-if="hasAnswered" class="q-mt-lg text-center">
+                  <q-badge
+                    :color="isCorrect ? 'positive' : 'negative'"
+                    class="q-pa-sm text-subtitle1"
+                  >
+                    {{ isCorrect ? "✅ ¡Correcto! +10 pts" : "❌ Incorrecto" }}
+                  </q-badge>
+                </div>
+              </div>
+            </div>
+
+            <!-- ========================= -->
+            <!-- 🏁 Estado: Quiz terminado -->
+            <!-- ========================= -->
+            <div v-else class="quiz-finished text-center q-pa-xl">
+              <q-icon name="fa-solid fa-party-horn" size="60px" color="positive" />
+
+              <div class="text-h5 q-mt-md">¡Quiz Terminado!</div>
+
+              <div class="text-caption text-grey q-mb-md">
+                Tu puntuación final: <strong>{{ currentScore }}</strong> puntos
+              </div>
+
+              <!-- Leaderboard final -->
+              <div class="final-leaderboard q-mt-lg">
+                <div class="text-subtitle1 q-mb-sm">Puntuaciones Finales</div>
+
+                <div
+                  v-for="(student, index) in sortedStudents"
+                  :key="student.id"
+                  class="leaderboard-item row items-center q-pa-sm q-mb-sm rounded-borders"
+                  :class="{
+                    'bg-yellow-2': index === 0,
+                    'bg-blue-1': index === 1,
+                    'bg-green-1': index === 2,
+                    'bg-grey-2': index > 2
+                  }"
+                >
+                  <div class="col text-left">
+                    <span class="text-weight-medium">
+                      {{ index + 1 }}. {{ student.name }}
+                    </span>
+                  </div>
+
+                  <div class="col-auto">
+                    <q-badge color="primary">{{ student.score }} pts</q-badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón salir -->
+            <q-card-actions align="center" class="q-pa-md">
+              <q-btn label="Abandonar Sala" color="negative" @click="leaveRoom" />
+            </q-card-actions>
+
+          </q-card>
         </div>
 
-        <!-- Botón salir -->
-        <q-card-actions align="center" class="q-pa-md">
-          <q-btn label="Abandonar Sala" color="negative" @click="leaveRoom" />
-        </q-card-actions>
+        <!-- Columna: Chat -->
+        <div class="col-12 col-md-4">
+          <ChatBox />
+        </div>
 
-      </q-card>
+      </div>
     </div>
   </div>
 </template>
@@ -195,6 +207,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoomStore } from "@/stores/room";
 import { useUserStore } from "@/stores/user";
 import socketService from "@/services/socket";
+import ChatBox from "@/components/room/ChatBox.vue";
 
 const roomStore = useRoomStore();
 const userStore = useUserStore();
